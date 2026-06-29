@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Twitter Clone (demo)
 
-## Getting Started
+A minimal Twitter-style app built with **Next.js (App Router)** and **Postgres**.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Signup / login** with just a username + password (no email, no verification)
+- bcrypt-hashed passwords, cookie-based sessions stored in Postgres
+- **Post** short messages, optionally with an **image** (stored in Postgres, served via an API route)
+- Reverse-chronological feed
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Next.js 16 (App Router, Server Actions) + React 19 + TypeScript
+- Tailwind CSS v4
+- PostgreSQL via the `pg` driver (raw SQL, no ORM)
+- `bcryptjs` for password hashing
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Prerequisites
 
-## Learn More
+- Node.js
+- A running PostgreSQL server
 
-To learn more about Next.js, take a look at the following resources:
+## Setup
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Create the database** (defaults assume a local Postgres with your shell user):
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```bash
+   createdb twitter_clone
+   psql -d twitter_clone -f db/schema.sql
+   ```
 
-## Deploy on Vercel
+2. **Configure the connection** in `.env.local`:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```
+   DATABASE_URL=postgresql://USER@localhost:5432/twitter_clone
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. **Install & run**:
+
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+   Open http://localhost:3000 (this demo session ran it on port 3100).
+
+4. **(Optional) Load sample data**:
+
+   ```bash
+   npm run seed
+   ```
+
+   Seeds 4 users (`alice`, `bob`, `sanjay`, `celeste`) and 15 posts, 6 with
+   images. Re-running wipes existing posts and reloads the fixture. Newly
+   created seed users get the password `password123`; existing users keep
+   their own password. Images are generated as SVG cards (`image/svg+xml`).
+
+## Project layout
+
+| Path | Purpose |
+|------|---------|
+| `db/schema.sql` | `users`, `posts`, `sessions` tables |
+| `db/seed.mjs` | Sample-data fixture (`npm run seed`) |
+| `lib/db.ts` | Postgres connection pool + `query()` helper |
+| `lib/auth.ts` | Password hashing, session create/destroy, `getCurrentUser()` |
+| `app/actions.ts` | Server Actions: `signup`, `login`, `logout`, `createPost` |
+| `app/page.tsx` | Home feed (Server Component) |
+| `app/Composer.tsx` | Client compose box with image preview |
+| `app/login`, `app/signup` | Auth pages |
+| `app/api/images/[id]/route.ts` | Serves post images from the DB |
+
+## Notes
+
+This is a demo: sessions don't auto-expire-clean, there are no rate limits, and
+images are stored as `bytea` in Postgres (fine for a demo, not for scale). The
+Server Action body limit is raised to 6 MB in `next.config.ts` to allow image
+uploads (capped at 5 MB in code).
