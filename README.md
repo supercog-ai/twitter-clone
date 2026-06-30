@@ -8,6 +8,7 @@ A minimal Twitter-style app built with **Next.js (App Router)** and **Postgres**
 - bcrypt-hashed passwords, cookie-based sessions stored in Postgres
 - **Post** short messages, optionally with an **image** (stored in Postgres, served via an API route)
 - Reverse-chronological feed
+- Image uploads up to 5 MB (stored as `bytea` in Postgres)
 
 ## Stack
 
