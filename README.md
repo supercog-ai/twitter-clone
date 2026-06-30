@@ -1,6 +1,6 @@
 # Twitter Clone (demo)
 
-A minimal Twitter-style app built with **Next.js (App Router)** and **Postgres**.
+A minimal Twitter-style app built with **Next.js (App Router)** and **Postgres**. Tested and working as of June 2026.
 
 ## Features
 
