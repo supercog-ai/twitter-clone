@@ -6,7 +6,11 @@ import { query } from "./db";
 const COOKIE_NAME = "session";
 const SESSION_DAYS = 30;
 
-export type User = { id: number; username: string };
+export type User = {
+  id: number;
+  username: string;
+  avatar_updated_at: string | null;
+};
 
 export async function hashPassword(password: string) {
   return bcrypt.hash(password, 10);
@@ -48,8 +52,12 @@ export async function getCurrentUser(): Promise<User | null> {
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token) return null;
 
-  const result = await query<{ id: number; username: string }>(
-    `SELECT u.id, u.username
+  const result = await query<{
+    id: number;
+    username: string;
+    avatar_updated_at: string | null;
+  }>(
+    `SELECT u.id, u.username, u.avatar_updated_at
        FROM sessions s
        JOIN users u ON u.id = s.user_id
       WHERE s.token = $1 AND s.expires_at > now()`,

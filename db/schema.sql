@@ -1,11 +1,19 @@
 -- Twitter clone schema
 
 CREATE TABLE IF NOT EXISTS users (
-  id            SERIAL PRIMARY KEY,
-  username      TEXT NOT NULL UNIQUE,
-  password_hash TEXT NOT NULL,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+  id                 SERIAL PRIMARY KEY,
+  username           TEXT NOT NULL UNIQUE,
+  password_hash      TEXT NOT NULL,
+  avatar             BYTEA,
+  avatar_type        TEXT,
+  avatar_updated_at  TIMESTAMPTZ,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Backfill columns on databases created before avatars existed.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar            BYTEA;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_type       TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_updated_at TIMESTAMPTZ;
 
 CREATE TABLE IF NOT EXISTS posts (
   id         SERIAL PRIMARY KEY,
