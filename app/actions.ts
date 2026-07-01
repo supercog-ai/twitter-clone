@@ -102,3 +102,48 @@ export async function createPost(formData: FormData): Promise<void> {
 
   revalidatePath("/");
 }
+
+export type AvatarActionState = { error?: string; ok?: boolean } | undefined;
+
+export async function uploadAvatar(
+  _prev: AvatarActionState,
+  formData: FormData
+): Promise<AvatarActionState> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const file = formData.get("avatar");
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "Choose an image to upload." };
+  }
+  if (!file.type.startsWith("image/")) {
+    return { error: "File must be an image." };
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    return { error: "Image must be smaller than 5MB." };
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  await query(
+    "UPDATE users SET avatar = $1, avatar_type = $2, avatar_updated_at = now() WHERE id = $3",
+    [buffer, file.type, user.id]
+  );
+
+  revalidatePath("/");
+  revalidatePath("/profile");
+  return { ok: true };
+}
+
+export async function removeAvatar(): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  await query(
+    "UPDATE users SET avatar = NULL, avatar_type = NULL, avatar_updated_at = NULL WHERE id = $1",
+    [user.id]
+  );
+
+  revalidatePath("/");
+  revalidatePath("/profile");
+}

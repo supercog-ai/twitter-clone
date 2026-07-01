@@ -3,8 +3,15 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createPost } from "./actions";
+import Avatar from "./Avatar";
 
-export default function Composer({ username }: { username: string }) {
+export default function Composer({
+  username,
+  avatarUpdatedAt,
+}: {
+  username: string;
+  avatarUpdatedAt: string | null;
+}) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -34,9 +41,11 @@ export default function Composer({ username }: { username: string }) {
       onSubmit={handleSubmit}
       className="flex gap-3 border-b border-neutral-800 p-4"
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-500 font-bold text-white">
-        {username.charAt(0).toUpperCase()}
-      </div>
+      <Avatar
+        username={username}
+        avatarUpdatedAt={avatarUpdatedAt}
+        size="md"
+      />
       <div className="flex-1">
         <textarea
           name="content"

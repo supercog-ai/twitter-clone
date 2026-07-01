@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { query } from "@/lib/db";
+import Avatar from "./Avatar";
 import Composer from "./Composer";
 import LogoutButton from "./LogoutButton";
 
@@ -10,6 +11,7 @@ type FeedPost = {
   has_image: boolean;
   created_at: string;
   username: string;
+  avatar_updated_at: string | null;
 };
 
 function timeAgo(date: Date) {
@@ -31,7 +33,8 @@ export default async function Home() {
             p.content,
             (p.image IS NOT NULL) AS has_image,
             p.created_at,
-            u.username
+            u.username,
+            u.avatar_updated_at
        FROM posts p
        JOIN users u ON u.id = p.user_id
       ORDER BY p.created_at DESC
@@ -44,7 +47,17 @@ export default async function Home() {
         <h1 className="text-xl font-bold">🐦 Home</h1>
         {user ? (
           <div className="flex items-center gap-3">
-            <span className="text-sm text-neutral-400">@{user.username}</span>
+            <Link
+              href="/profile"
+              className="flex items-center gap-2 rounded-full py-1 pr-3 pl-1 hover:bg-neutral-900"
+            >
+              <Avatar
+                username={user.username}
+                avatarUpdatedAt={user.avatar_updated_at}
+                size="sm"
+              />
+              <span className="text-sm text-neutral-400">@{user.username}</span>
+            </Link>
             <LogoutButton />
           </div>
         ) : (
@@ -66,7 +79,10 @@ export default async function Home() {
       </header>
 
       {user ? (
-        <Composer username={user.username} />
+        <Composer
+          username={user.username}
+          avatarUpdatedAt={user.avatar_updated_at}
+        />
       ) : (
         <div className="border-b border-neutral-800 p-4 text-center text-neutral-400">
           <Link href="/signup" className="text-sky-500 hover:underline">
@@ -91,9 +107,11 @@ export default async function Home() {
               key={post.id}
               className="flex gap-3 border-b border-neutral-800 p-4"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-700 font-bold text-white">
-                {post.username.charAt(0).toUpperCase()}
-              </div>
+              <Avatar
+                username={post.username}
+                avatarUpdatedAt={post.avatar_updated_at}
+                size="md"
+              />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 text-sm">
                   <span className="font-semibold">{post.username}</span>
